@@ -34,7 +34,7 @@ The `snap.py` script provides tools for managing and reporting on snapshots in a
 ### Command Syntax
 
 ```bash
-python snap.py --ip <QUMULO_IP> --username <USERNAME> --password <PASSWORD> --action <ACTION> [--file_name <FILE_NAME>]
+python3 snap.py --ip <QUMULO_IP> --username <USERNAME> --password <PASSWORD> --action <ACTION> [--filename <FILE_NAME>]
 ```
 ### Command Line Options
 
@@ -46,44 +46,46 @@ python snap.py --ip <QUMULO_IP> --username <USERNAME> --password <PASSWORD> --ac
 | `--action`   | Action to perform:                                            | Yes      |
 |              | `1` - Generate snapshot usage report.                         |          |
 |              | `2` - Placeholder.                                            |          |
-| `--file_name`| (Optional) Specify a file name to save the report as CSV.     | No       |
+| `--filename` | (Optional) Specify a file name to save the report as CSV.      | No       |
 
 Examples
 1. Generate Snapshot Usage Report
 Group snapshots by policy_id and generate a usage report displayed in the console:
 
 ```bash
-python snap.py --ip 192.168.1.1 --username admin --password secret --action 1
+python3 snap.py --ip 192.168.1.1 --username admin --password secret --action 1
 ```
 
 2. Generate Snapshot Usage Report Saved as CSV
 Save the snapshot usage report to a file called snapshot_usage.csv:
 
 ```bash
-python snap.py --ip 192.168.1.1 --username admin --password secret --action 1 --file_name snapshot_usage.csv
+python3 snap.py --ip 192.168.1.1 --username admin --password secret --action 1 --filename snapshot_usage.csv
 ```
 ### Output 
 ```bash
-INFO:__main__:Successfully logged in.
-INFO:__main__:Retrieved 53 snapshots.
-INFO:__main__:Total capacity reported 38.1GiB
-INFO:__main__:Grouped snapshots into 3 groups based on policy_id.
-INFO:__main__:Snapshot Report by policy_id: 
+2024-12-31 04:29:04,238 - __main__ - INFO - Successfully logged in.
+2024-12-31 04:29:04,240 - __main__ - INFO - Retrieved 55 snapshots.
+2024-12-31 04:29:04,244 - __main__ - INFO - Total capacity reported 38.1GiB
+2024-12-31 04:29:04,358 - __main__ - INFO - Grouped snapshots into 4 groups based on policy_id.
+2024-12-31 04:29:04,384 - __main__ - INFO - Snapshot Report by policy_id: 
 
-Policy ID           Path                Snapshot Name       Size                Snapshot ID(s)      Expiration Dates    
+Policy ID           Path                Snapshot Name(s)    Size                Snapshot ID(s)      Expiration Dates    
 ----------------------------------------------------------------------------------------------------
 on_demand           /upgrades/          2_test              4.0KiB              2                   N/A                 
 on_demand           /upgrades/          59_upg1             8.0KiB              59                  N/A                 
 on_demand           /upgrades/          61_tes1             4.0KiB              61                  N/A                 
 on_demand           /upgrades/          63_fooo             4.0KiB              63                  N/A                 
-on_demand           /upgrades/          84_test1            4.0KiB              84                  N/A                 
-2                   /upgrades/          5_minutes_upgrades  16.0KiB             5, 6, 7, 8, 9, 10, 1...                    
-1                   /upgrades/          77_yearly_upgrades  28.0KiB             77, 78, 79, 80, 81, ...2024-12-31T09:00:00.000294891Z
-INFO:__main__:Grouped snapshots into 2 groups based on source_file_id.
-INFO:__main__:Snapshot Report by source_file_id: 
+on_demand           /test_locks/        84_test1            4.0KiB              84                  N/A                 
+2                   /upgrades/          5_minutes_upgra...  16.0KiB             5, 6, 7, 8, 9, ...                      
+1                   /upgrades/          78_yearly_upgra...  28.0KiB             78, 79, 80, 81,...  2025-01-01          
+3                   /nfs1/              85_nfs_nfs1, 86...  4.0KiB              85, 86                                  
+2024-12-31 04:29:04,496 - __main__ - INFO - Grouped snapshots into 3 groups based on source_file_id.
+2024-12-31 04:29:04,503 - __main__ - INFO - Snapshot Report by source_file_id: 
 
 Path ID             Path                Snapshot Name       Size                Snapshot ID(s)      
 ----------------------------------------------------------------------------------------------------
-5                   /upgrades/          2_test              38.1GiB             2, 5, 6, 7, 8, 9, 10...                    
-2000003             /test_locks/        84_test1            4.0KiB              84              
+5                   /upgrades/          2_test, 5_minut...  38.1GiB             2, 5, 6, 7, 8, ...                      
+2000003             /test_locks/        84_test1            4.0KiB              84                                      
+2000004             /nfs1/              85_nfs_nfs1, 86...  4.0KiB              85, 86                  
 ```

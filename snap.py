@@ -256,7 +256,7 @@ class Snapshot:
         """
         Writes report rows to a CSV file.
         """
-        with open(file_name, "w", newline="", encoding="utf-8") as csvfile:
+        with open(file_name, "a", newline="", encoding="utf-8") as csvfile:
             csvwriter = csv.writer(csvfile, quoting=csv.QUOTE_ALL)
             csvwriter.writerow(headers)
             csvwriter.writerows(rows)
@@ -312,7 +312,7 @@ def main() -> None:
         help="Action to be performed. 1: Get snapshot usage report; 2: Placeholder",
     )
     parser.add_argument(
-        "--file_name", type=str, help="Output file name to save the report"
+        "--filename", type=str, help="Output file name to save the report"
     )
     args = parser.parse_args()
 
@@ -341,7 +341,7 @@ def main() -> None:
             snapshot.results = {}
             grouped_snaps = snapshot.group_snapshots(group_by=grp)
             snapshot.calculate_snapshot_sizes(grouped_snaps)
-            snapshot.generate_snapshot_usage_report(usage=grp, file_name=args.file_name)
+            snapshot.generate_snapshot_usage_report(usage=grp, file_name=args.filename)
 
     elif args.action == "2":  
         pass
