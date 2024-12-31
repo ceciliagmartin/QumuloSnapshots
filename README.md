@@ -6,10 +6,9 @@ This repository contains for getting more information about snapshots in a Qumul
 ## Features
 
 - **Snapshot Grouping**:
-  - Group snapshots by `policy_id` or `source_file_id`.
+  - Group snapshots by `policy_id` and `source_file_id`.
 - **Usage Reports**:
   - Generate detailed reports of snapshot usage.
-  - Identify the top snapshots by size.
 - **Size Calculation**:
   - Calculate sizes for on-demand and policy-based snapshots.
 - **Report Output**:
