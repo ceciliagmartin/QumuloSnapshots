@@ -51,7 +51,7 @@ class SnapInfo:
     expiration: str
     policy: str
     path_id: str
-    directory: Optional[str] = ""
+    path_str: Optional[str] = ""
     size: Optional[int] = 0
 
 
@@ -62,7 +62,6 @@ class SnapPolicyInfo:
     path_id: str
     path_str: str
     snapshots: List[SnapInfo] = field(default_factory=list)  # List of SnapInfo objects
-    directory: Optional[str] = ""
     size: Optional[int] = 0
 
 
@@ -106,10 +105,12 @@ class Snapshot:
         for snapshot in self.snapshots:
             group_key = snapshot.get(group_by) or "on_demand"
             path_id = snapshot.get("source_file_id")
-            file_path = self.rc.fs.get_file_attr(path_id)["path"]
+            path_str = self.rc.fs.get_file_attr(path_id)["path"]
+            logger.debug(f"Processing snapshot {snapshot['id']} with group_key {group_key} and path {path_str}")
             snap_info = SnapInfo(
                 policy=snapshot.get("policy_id"),
                 path_id=path_id,
+                path_str=path_str,
                 name=snapshot.get("name"),
                 id=str(snapshot.get("id")),
                 expiration=snapshot.get("expiration", ""),
@@ -122,13 +123,13 @@ class Snapshot:
                     path_id=snapshot.get("source_file_id")
                     if group_by == "source_file_id"
                     else None,
-                    policy_name=snapshot.get("name"),
+                    policy_name= snapshot.get(group_by) or "on_demand", #snapshot.get("name"),
                     snapshots=[snap_info],
-                    path_str=file_path,
+                    path_str=path_str if group_key != "on_demand" else "N/A",
                 )
             else:
                 groups[group_key].snapshots.append(snap_info)
-
+            
         logger.info(f"Grouped snapshots into {len(groups)} groups based on {group_by}.")
         return groups
 
@@ -193,7 +194,7 @@ class Snapshot:
             return [
                 "Policy ID",
                 "Path",
-                "Snapshot Name",
+                "Snapshot Name(s)",
                 "Size",
                 "Snapshot ID(s)",
                 "Expiration Dates",
@@ -212,9 +213,11 @@ class Snapshot:
         if "on_demand" in self.results:
             group_info = self.results["on_demand"]
             for snap in group_info.snapshots:
+                path = self.rc.fs.get_file_attr(snap.path_id)["path"]
+
                 row = [
                     "on_demand",  # On-demand label
-                    group_info.path_str,
+                    path,
                     snap.name,
                     self.format_bytes(snap.size or 0),
                     snap.id,
@@ -234,13 +237,14 @@ class Snapshot:
                 default="N/A",
             )
             snapshot_ids = [snap.id for snap in group_info.snapshots]
+            snapshot_names = [snap.name for snap in group_info.snapshots]
             row = [
                 group_key,  # Policy ID or Path ID
                 group_info.path_str,
-                group_info.policy_name,
+                ", ".join(snapshot_names),
                 self.format_bytes(group_info.size or 0),
                 ", ".join(snapshot_ids),
-                earliest_expiration,
+                earliest_expiration.split('T')[0],
             ]
             rows.append(row)
         return rows
@@ -265,14 +269,15 @@ class Snapshot:
         print("-" * 100)
         for row in rows:
             truncated_row = row.copy()
+            snapshot_names = row[2]
+            if len(snapshot_names) > 15:
+                truncated_row[2] = snapshot_names[:15] + "..."
             # Truncate Snapshot ID(s) column (assuming it is the 5th column)
-            if len(row) > 4:  # Ensure the column exists
+            if len(row) > 4:  # Ensure the column snapID exists
                 snapshot_ids = row[4]
-                if len(snapshot_ids) > 20:
-                    truncated_row[4] = snapshot_ids[:20] + "..."
+                if len(snapshot_ids) > 15:
+                    truncated_row[4] = snapshot_ids[:15] + "..."
             print("".join(f"{col:<20}" for col in truncated_row))
-        # for row in rows:
-        #    print("".join(f"{col:<20}" for col in row))
         logger.debug("Snapshot report displayed.")
 
     def generate_snapshot_usage_report(
