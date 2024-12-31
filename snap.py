@@ -32,9 +32,6 @@ import getpass
 import sys
 import logging
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 
 
 class Creds(TypedDict):
@@ -43,6 +40,10 @@ class Creds(TypedDict):
     QPASS: str
     QPORT: int
 
+
+# Configure logging
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 
 @dataclass
 class SnapInfo:
@@ -296,11 +297,6 @@ class Snapshot:
             self._display_report(headers, rows)
 
    
-def configure_logging(debug: bool = False):
-    log_level = logging.DEBUG if debug else logging.INFO
-    logging.basicConfig(
-        level=log_level, format="%(asctime)s - %(levelname)s - %(message)s"
-    )
 
 
 def main() -> None:
@@ -318,7 +314,6 @@ def main() -> None:
     parser.add_argument(
         "--file_name", type=str, help="Output file name to save the report"
     )
-    parser.add_argument("--debug", action="store_false", help="Enable debug messages")
     args = parser.parse_args()
 
     # If no arguments are provided, prompt interactively
@@ -335,7 +330,6 @@ def main() -> None:
         "QPORT": 8000,  # Default Qumulo REST API port
     }
 
-    configure_logging(args.debug)
     client = Client(creds)
     snapshot = Snapshot(client)
     logger.info(
