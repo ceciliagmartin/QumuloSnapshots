@@ -33,7 +33,6 @@ import sys
 import logging
 
 
-
 class Creds(TypedDict):
     QHOST: str
     QUSER: str
@@ -43,7 +42,10 @@ class Creds(TypedDict):
 
 # Configure logging
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)
+
 
 @dataclass
 class SnapInfo:
@@ -107,7 +109,9 @@ class Snapshot:
             group_key = snapshot.get(group_by) or "on_demand"
             path_id = snapshot.get("source_file_id")
             path_str = self.rc.fs.get_file_attr(path_id)["path"]
-            logger.debug(f"Processing snapshot {snapshot['id']} with group_key {group_key} and path {path_str}")
+            logger.debug(
+                f"Processing snapshot {snapshot['id']} with group_key {group_key} and path {path_str}"
+            )
             snap_info = SnapInfo(
                 policy=snapshot.get("policy_id"),
                 path_id=path_id,
@@ -124,13 +128,14 @@ class Snapshot:
                     path_id=snapshot.get("source_file_id")
                     if group_by == "source_file_id"
                     else None,
-                    policy_name= snapshot.get(group_by) or "on_demand", #snapshot.get("name"),
+                    policy_name=snapshot.get(group_by)
+                    or "on_demand",  # snapshot.get("name"),
                     snapshots=[snap_info],
                     path_str=path_str if group_key != "on_demand" else "N/A",
                 )
             else:
                 groups[group_key].snapshots.append(snap_info)
-            
+
         logger.info(f"Grouped snapshots into {len(groups)} groups based on {group_by}.")
         return groups
 
@@ -149,11 +154,17 @@ class Snapshot:
         # For on-demand snapshots, we individually sum their capacities from capacity_used_by_snapshot.
         try:
             for snap in snaps_on_demand.snapshots:
-                size = self.rc.snapshot.capacity_used_by_snapshot(snap.id)[
-                    "capacity_used_bytes"
-                ]
-                snap.size = int(size)
-                logger.debug(f"On demand: Snapshot_id {snap.id} uses {snap.size}")
+                try:
+                    size = self.rc.snapshot.capacity_used_by_snapshot(snap.id)[
+                        "capacity_used_bytes"
+                    ]
+                    snap.size = int(size)
+                    logger.debug(f"On demand: Snapshot_id {snap.id} uses {snap.size}")
+                except Exception as e:
+                    if "snapshot_not_found_error" in str(e):
+                        logger.error("Snapshot {snap.id} no longer exists. Skipping...")
+                    else:
+                        logger.error(f"Unexpected error for snapshot {snap.id}: {e}")
             self.results["on_demand"] = snaps_on_demand
         except Exception as e:
             logger.error(f"Error calculating on-demand snapshot size: {e}")
@@ -245,7 +256,7 @@ class Snapshot:
                 ", ".join(snapshot_names),
                 self.format_bytes(group_info.size or 0),
                 ", ".join(snapshot_ids),
-                earliest_expiration.split('T')[0],
+                earliest_expiration.split("T")[0],
             ]
             rows.append(row)
         return rows
@@ -296,8 +307,6 @@ class Snapshot:
             logger.info(f"Snapshot Report by {usage}: \n")
             self._display_report(headers, rows)
 
-   
-
 
 def main() -> None:
     # Set up argument parsing
@@ -343,7 +352,7 @@ def main() -> None:
             snapshot.calculate_snapshot_sizes(grouped_snaps)
             snapshot.generate_snapshot_usage_report(usage=grp, file_name=args.filename)
 
-    elif args.action == "2":  
+    elif args.action == "2":
         pass
     else:
         logger.error(f"Invalid action '{args.action}'. Please specify '1' or '2'.")
