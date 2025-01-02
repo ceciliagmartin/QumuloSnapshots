@@ -130,27 +130,10 @@ class Snapshot:
         for snapshot in self.snapshots:
             group_key = snapshot.get(group_by) or "on_demand"
             path_id = snapshot.get("source_file_id")
-            try:
-                path_str = self.rc.fs.get_file_attr(path_id)["path"]
-                logger.debug(
-                    f"Processing snapshot {snapshot['id']} with group_key {group_key} and path {path_str}"
-                )
-            except RequestError as e:
-                if "fs_no_such_inode_error" in str(e):
-                    logger.error(
-                        f"Snapshot {snapshot['id']} encountered a missing inode error"
-                    )
-                    logger.debug(f"{e}")
-                    path_str = (
-                        "Path not found"
-                    )
-                else:
-                    logger.error(
-                        f"Unexpected error occurred while processing snapshot {snapshot['id']}"
-                    )
-                    logger.debug(f"{e}")
-                    path_str = "Unknown error"
-
+            path_str = self._get_file_path(path_id, snapshot)
+            logger.debug(
+                f"Processing snapshot {snapshot['id']} with group_key {group_key} and path {path_str}"
+            )
             snap_info = SnapInfo(
                 policy=snapshot.get("policy_id"),
                 path_id=path_id,
@@ -237,6 +220,30 @@ class Snapshot:
             index += 1
         return f"{size_in_bytes:.1f}{units[index]}"
 
+    def _get_file_path(self, path_id:str, snapshot_id: str) -> str:
+        snapshot_name = snapshot_id.get("name", "N/A") if isinstance(snapshot_id, dict) else snapshot_id
+        try:
+                path_str = self.rc.fs.get_file_attr(path_id)["path"]
+                logger.debug(
+                    f"Processing snapshot {snapshot_name} and path {path_str}"
+                )
+        except RequestError as e:
+            if "fs_no_such_inode_error" in str(e):
+                logger.error(
+                    f"Snapshot {snapshot_name} encountered a missing inode error on path_id {path_id}"
+                )
+                logger.debug(f"{e}")
+                path_str = (
+                    "Path not found"
+                )
+            else:
+                logger.error(
+                    f"Unexpected error occurred while processing snapshot {snapshot_id} on path_id {path_id}"
+                )
+                logger.debug(f"{e}")
+                path_str = "Unknown error"
+        return path_str
+    
     def _get_headers(self, usage: str) -> List[str]:
         """
         Returns appropriate headers based on the action.
@@ -264,7 +271,8 @@ class Snapshot:
         if "on_demand" in self.results:
             group_info = self.results["on_demand"]
             for snap in group_info.snapshots:
-                path = self.rc.fs.get_file_attr(snap.path_id)["path"]
+                #path = self.rc.fs.get_file_attr(snap.path_id)["path"]
+                path = self._get_file_path(snap.path_id, snap.id)
 
                 row = [
                     "on_demand",  # On-demand label

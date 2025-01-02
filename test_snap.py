@@ -1,6 +1,7 @@
 import unittest
 from unittest.mock import MagicMock, patch
 from snap import Snapshot, SnapInfo, SnapPolicyInfo
+from qumulo.lib.request import RequestError
 
 
 class TestSnapshot(unittest.TestCase):
@@ -208,3 +209,41 @@ class TestSnapshot(unittest.TestCase):
         # Generate report to console
         self.snapshot.generate_snapshot_usage_report(usage="policy_id", file_name=None)
         mock_display_report.assert_called_once()
+
+    def test_get_file_path_handles_missing_path(self):
+        mock_client = MagicMock()
+        self.mock_client.rc.snapshot.list_snapshots.return_value = {
+            "entries": [
+                {
+                    "id": "1",
+                    "policy_id": "1",
+                    "source_file_id": "1",
+                    "name": "snap_1",
+                    "expiration": "2024-12-31",
+                },
+                {
+                    "id": "2",
+                    "policy_id": None,
+                    "source_file_id": "invalid_id",
+                    "name": "snap_2",
+                    "expiration": "2025-01-01",
+                },
+            ]
+        }
+
+        mock_client.rc.snapshot.capacity_used_by_snapshot.return_value = {
+            "capacity_used_bytes": 1024
+        }
+        mock_client.rc.snapshot.calculate_used_capacity.return_value = {"bytes": 2048}
+        snapshot = Snapshot(mock_client)
+        snapshot.rc.fs.get_file_attr.side_effect = [
+            RequestError(
+                404, "foo", json_error={"description": "fs_no_such_inode_error"}
+            ),
+            RequestError(
+                status_code=404, status_message="fs_no_such_inode_error: does not exist"
+            ),
+        ]
+        actual_path = snapshot._get_file_path("2", "foo")
+        expected_path = "Path not found"
+        self.assertEqual(actual_path, expected_path)
