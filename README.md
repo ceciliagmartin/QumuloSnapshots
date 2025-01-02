@@ -1,19 +1,25 @@
-# Qumulo-Snapshots
-This repository contains for getting more information about snapshots in a Qumulo cluster. It provides functionalities to group snapshots, calculate their usage, and generate detailed reports. [WIP]
-
-
+# Qumulo Snapshots
+This repository contains a tool for analyzing and reporting snapshot capacity usage on a Qumulo cluster.
 
 ## Features
 
 - **Snapshot Grouping**:
   - Group snapshots by `policy_id` or `source_file_id`.
+
+    **Policy-Based Grouping**: 
+     - Snapshots are grouped by their associated policies.
+     - Manually created (on-demand) snapshots are displayed individually for better visibility.
+
+    **Path-Based Grouping**: 
+     - Snapshots are grouped by the file paths they cover.
+
 - **Usage Reports**:
-  - Generate detailed reports of snapshot usage.
-  - Identify the top snapshots by size.
+  - Generate detailed reports of snapshot usage. 
+
 - **Size Calculation**:
   - Calculate sizes for on-demand and policy-based snapshots.
 - **Report Output**:
-  - Save reports as CSV files or display them on the console.
+  - Save reports as CSV files or display them on the console (default).
 
 ## Installation
 
@@ -21,9 +27,10 @@ This repository contains for getting more information about snapshots in a Qumul
 
 1. **Python 3.8+**
 2. **Required Dependencies**:
-   Install dependencies using pip:
+   Install qumulo_api using pip:
    ```bash
    pip install -r requirements.txt
+Qumulo Api minimum version of 5.1.3 (check with pip list | grep qumulo)
 
 ## Usage
 
