@@ -27,6 +27,8 @@ from dataclasses import dataclass, field
 from typing import TypedDict, List, Dict, Set, Optional
 from qumulo.rest_client import RestClient
 from qumulo.lib.auth import Credentials
+from qumulo.lib.request import RequestError
+
 import argparse
 import csv
 import getpass
@@ -128,10 +130,27 @@ class Snapshot:
         for snapshot in self.snapshots:
             group_key = snapshot.get(group_by) or "on_demand"
             path_id = snapshot.get("source_file_id")
-            path_str = self.rc.fs.get_file_attr(path_id)["path"]
-            logger.debug(
-                f"Processing snapshot {snapshot['id']} with group_key {group_key} and path {path_str}"
-            )
+            try:
+                path_str = self.rc.fs.get_file_attr(path_id)["path"]
+                logger.debug(
+                    f"Processing snapshot {snapshot['id']} with group_key {group_key} and path {path_str}"
+                )
+            except RequestError as e:
+                if "fs_no_such_inode_error" in str(e):
+                    logger.error(
+                        f"Snapshot {snapshot['id']} encountered a missing inode error"
+                    )
+                    logger.debug(f"{e}")
+                    path_str = (
+                        "Path not found"
+                    )
+                else:
+                    logger.error(
+                        f"Unexpected error occurred while processing snapshot {snapshot['id']}"
+                    )
+                    logger.debug(f"{e}")
+                    path_str = "Unknown error"
+
             snap_info = SnapInfo(
                 policy=snapshot.get("policy_id"),
                 path_id=path_id,
