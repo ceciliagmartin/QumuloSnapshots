@@ -46,7 +46,11 @@ class TestSnapshot(unittest.TestCase):
             "bytes": 2048
         }
         self.mock_client.rc.fs.get_file_attr.side_effect = lambda path_id: {
-            "path": "PathFoo" if path_id == "1" else "PathBaz" if path_id == "2" else "Unknown Path"
+            "path": "PathFoo"
+            if path_id == "1"
+            else "PathBaz"
+            if path_id == "2"
+            else "Unknown Path"
         }
 
         self.snapshot = Snapshot(self.mock_client)
@@ -62,7 +66,6 @@ class TestSnapshot(unittest.TestCase):
         self.assertEqual(policy_group.path_str, "PathFoo")
         self.assertEqual(policy_group.policy_name, "1")
 
-
         on_demand_group = groups["on_demand"]
         self.assertIsInstance(on_demand_group, SnapPolicyInfo)
         self.assertEqual(on_demand_group.path_str, "N/A")
@@ -72,9 +75,7 @@ class TestSnapshot(unittest.TestCase):
 
         self.assertEqual(len(on_demand_group.snapshots), 2)
 
-
     def test_group_snapshots_by_path(self):
-
         self.mock_client.rc.snapshot.list_snapshots.return_value = {
             "entries": [
                 {
@@ -107,7 +108,11 @@ class TestSnapshot(unittest.TestCase):
             "bytes": 2048
         }
         self.mock_client.rc.fs.get_file_attr.side_effect = lambda path_id: {
-            "path": "PathFoo" if path_id == "1" else "PathBaz" if path_id == "2" else "Unknown Path"
+            "path": "PathFoo"
+            if path_id == "1"
+            else "PathBaz"
+            if path_id == "2"
+            else "Unknown Path"
         }
 
         self.snapshot = Snapshot(self.mock_client)
@@ -127,7 +132,6 @@ class TestSnapshot(unittest.TestCase):
         self.assertEqual(path_2.path_str, "PathBaz")
         self.assertEqual(len(path_2.snapshots), 1)
         self.assertEqual(path_2.snapshots[0].id, "3")
-
 
     def test_calculate_snapshot_sizes(self):
         groups = self.snapshot.group_snapshots(group_by="policy_id")
@@ -149,7 +153,6 @@ class TestSnapshot(unittest.TestCase):
         self.assertIn("1", groups)  # Policy-based group still exists
         self.assertEqual(len(groups["1"].snapshots), 2)
 
-
     def test_prepare_rows_by_policy(self):
         groups = self.snapshot.group_snapshots(group_by="policy_id")
         self.snapshot.calculate_snapshot_sizes(groups)
@@ -163,11 +166,11 @@ class TestSnapshot(unittest.TestCase):
             ["on_demand", "Unknown Path", "snap_4", "1.0KiB", "4", "2025-05-01"],
             ["1", "PathFoo", "snap_1, snap_11", "2.0KiB", "1, 3", "2024-12-31"],
         ]
-        
+
         self.assertEqual(
             set(tuple(row) for row in rows), set(tuple(row) for row in expected_rows)
-       )
-    
+        )
+
     def test_prepare_rows_by_path(self):
         groups = self.snapshot.group_snapshots(group_by="source_file_id")
         self.snapshot.calculate_snapshot_sizes(groups)
@@ -184,8 +187,6 @@ class TestSnapshot(unittest.TestCase):
             set(tuple(row) for row in rows), set(tuple(row) for row in expected_rows)
         )
 
-
-   
     @patch.object(Snapshot, "_write_csv")
     def test_generate_snapshot_usage_report_file(self, mock_write_csv):
         groups = self.snapshot.group_snapshots(group_by="policy_id")
