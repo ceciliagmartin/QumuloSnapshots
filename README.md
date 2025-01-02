@@ -4,7 +4,7 @@ This repository contains a tool for analyzing and reporting snapshot capacity us
 ## Features
 
 - **Snapshot Grouping**:
-  - Group snapshots by `policy_id` or `source_file_id`.
+  - Group snapshots by `policy_id` and `source_file_id`.
 
     **Policy-Based Grouping**: 
      - Snapshots are grouped by their associated policies.
@@ -14,8 +14,8 @@ This repository contains a tool for analyzing and reporting snapshot capacity us
      - Snapshots are grouped by the file paths they cover.
 
 - **Usage Reports**:
-  - Generate detailed reports of snapshot usage. 
-
+  - Generate detailed reports of snapshot usage.
+  - Identify the top snapshots by size.
 - **Size Calculation**:
   - Calculate sizes for on-demand and policy-based snapshots.
 - **Report Output**:
