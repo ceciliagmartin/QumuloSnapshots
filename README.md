@@ -41,20 +41,25 @@ The `snap.py` script provides tools for managing and reporting on snapshots in a
 ### Command Syntax
 
 ```bash
-python3 snap.py --ip <QUMULO_IP> --username <USERNAME> --password <PASSWORD> --action <ACTION> [--filename <FILE_NAME>]
+python3 snap.py --host <NODE_ADDRESS> --username <USERNAME> --password <PASSWORD> --action <ACTION> [--filename <FILE_NAME>]
+```
+```bash
+python3 snap.py --host <NODE_ADDRESS> --token <TOKEN>--action <ACTION> [--filename <FILE_NAME>]
 ```
 ### Command Line Options
 
 | Option       | Description                                                   | Required |
 |--------------|---------------------------------------------------------------|----------|
-| `--ip`       | IP address of the Qumulo cluster.                             | Yes      |
+| `--host`     | IP address or FQDN of a node in a Qumulo cluster.             | Yes      |
 | `--username` | Username for authentication on the Qumulo cluster.            | Yes      |
 | `--password` | Password for authentication on the Qumulo cluster.            | Yes      |
+| `--token`    | Authentication token for the Qumulo cluster.                  | Yes      |
 | `--action`   | Action to perform:                                            | Yes      |
 |              | `1` - Generate snapshot usage report.                         |          |
 |              | `2` - Placeholder.                                            |          |
 | `--filename` | (Optional) Specify a file name to save the report as CSV.      | No       |
 
+** For authentication Token OR Username and password combination are required
 Examples
 1. Generate Snapshot Usage Report
 Group snapshots by policy_id and generate a usage report displayed in the console:
