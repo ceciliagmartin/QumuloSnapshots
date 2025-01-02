@@ -220,22 +220,22 @@ class Snapshot:
             index += 1
         return f"{size_in_bytes:.1f}{units[index]}"
 
-    def _get_file_path(self, path_id:str, snapshot_id: str) -> str:
-        snapshot_name = snapshot_id.get("name", "N/A") if isinstance(snapshot_id, dict) else snapshot_id
+    def _get_file_path(self, path_id: str, snapshot_id: str) -> str:
+        snapshot_name = (
+            snapshot_id.get("name", "N/A")
+            if isinstance(snapshot_id, dict)
+            else snapshot_id
+        )
         try:
-                path_str = self.rc.fs.get_file_attr(path_id)["path"]
-                logger.debug(
-                    f"Processing snapshot {snapshot_name} and path {path_str}"
-                )
+            path_str = self.rc.fs.get_file_attr(path_id)["path"]
+            logger.debug(f"Processing snapshot {snapshot_name} and path {path_str}")
         except RequestError as e:
             if "fs_no_such_inode_error" in str(e):
-                logger.error(
+                logger.debug(
                     f"Snapshot {snapshot_name} encountered a missing inode error on path_id {path_id}"
                 )
                 logger.debug(f"{e}")
-                path_str = (
-                    "Path not found"
-                )
+                path_str = "Path not found"
             else:
                 logger.error(
                     f"Unexpected error occurred while processing snapshot {snapshot_id} on path_id {path_id}"
@@ -243,7 +243,7 @@ class Snapshot:
                 logger.debug(f"{e}")
                 path_str = "Unknown error"
         return path_str
-    
+
     def _get_headers(self, usage: str) -> List[str]:
         """
         Returns appropriate headers based on the action.
@@ -271,7 +271,6 @@ class Snapshot:
         if "on_demand" in self.results:
             group_info = self.results["on_demand"]
             for snap in group_info.snapshots:
-                #path = self.rc.fs.get_file_attr(snap.path_id)["path"]
                 path = self._get_file_path(snap.path_id, snap.id)
 
                 row = [
