@@ -185,9 +185,9 @@ class Snapshot:
                     logger.debug(f"On demand: Snapshot_id {snap.id} uses {snap.size}")
                 except Exception as e:
                     if "snapshot_not_found_error" in str(e):
-                        logger.error(f"Snapshot {snap.id} no longer exists. Skipping...")
+                        logger.debug(f"Snapshot {snap.id} no longer exists. Skipping...")
                     else:
-                        logger.error(f"Unexpected error for snapshot {snap.id}: {e}")
+                        logger.error(f"Unexpected error processing snapshot {snap.id}: {e}")
             self.results["on_demand"] = snaps_on_demand
         except Exception as e:
             logger.error(f"Error calculating on-demand snapshot size: {e}")
