@@ -172,6 +172,7 @@ class Snapshot:
         # Calculate sizes for other policies
         self.calculate_size_by_policy(groups)
 
+
     def calculate_size_on_demand(self, snaps_on_demand: SnapPolicyInfo) -> None:
         # For on-demand snapshots, we individually sum their capacities from capacity_used_by_snapshot.
         try:
@@ -184,7 +185,7 @@ class Snapshot:
                     logger.debug(f"On demand: Snapshot_id {snap.id} uses {snap.size}")
                 except Exception as e:
                     if "snapshot_not_found_error" in str(e):
-                        logger.error("Snapshot {snap.id} no longer exists. Skipping...")
+                        logger.error(f"Snapshot {snap.id} no longer exists. Skipping...")
                     else:
                         logger.error(f"Unexpected error for snapshot {snap.id}: {e}")
             self.results["on_demand"] = snaps_on_demand
